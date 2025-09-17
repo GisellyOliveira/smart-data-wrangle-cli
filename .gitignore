@@ -4,3 +4,4 @@ __pycache__/
 output.txt
 .json
 *.egg-info/
+-e git+https://github.com/GisellyOliveira/smart-data-wrangle-cli.git@3685ab9f0f2cec3d68e201be38da9dabca3de022#egg=file_organizer_cli

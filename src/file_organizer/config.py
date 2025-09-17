@@ -2,6 +2,7 @@ import json
 import logging
 from pathlib import Path
 from typing import Dict
+from colorama import Fore, Style
 
 from platformdirs import user_config_dir
 
@@ -120,23 +121,23 @@ def load_extension_map() -> Dict[str, str]:
                 user_map = json.load(f)
             
             if isinstance(user_map, dict):
-                logger.info(f"Loaded custom extension map from {config_path}")
+                logger.info(f"{Fore.BLUE}Loaded custom extension map from {config_path}.{Style.RESET_ALL}")
                 # Starts with a copy of the default and updates it with the user's preferences.
                 combined_map = DEFAULT_EXTENSION_MAP.copy()
                 combined_map.update(user_map)
                 return combined_map
             else:
                 logger.warning(
-                    f"Configuration file {config_path} is not a valid JSON dictionary. "
-                    f"Using default extension map."
+                    f"{Fore.CYAN}Configuration file {config_path} is not a valid JSON dictionary.{Style.RESET_ALL}"
+                    f"{Fore.CYAN}Using default extension map.{Style.RESET_ALL}"
                 )
         except (json.JSONDecodeError, OSError) as e:
             logger.error(
-                f"Error reading or decoding config from {config_path}: {e}. "
-                f"Using default extension map."
+                f"{Fore.MAGENTA}Error reading or decoding config from {config_path}: {e}.{Style.RESET_ALL}"
+                f"{Fore.MAGENTA}Using default extension map.{Style.RESET_ALL}"
             )
     else:
-        logger.info("No custom configuration file found. Using default extension map.")
+        logger.info(f"{Fore.BLUE}No custom configuration file found. Using default extension map.{Style.RESET_ALL}")
     
     return DEFAULT_EXTENSION_MAP.copy()
 

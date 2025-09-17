@@ -3,6 +3,7 @@ import logging
 from pathlib import Path
 from typing import Optional, Dict
 import shutil
+from colorama import Fore, Style
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +39,9 @@ class FileOrganizer:
         self.files_moved = 0
         self.files_skipped = 0
 
+        print(f"\n{Fore.BLUE}#######################################################################")
         logger.info(f"Core organizer initialized. Source: '{self.source_dir}', Destination: '{self.dest_dir}'")
+        print(f"\n{Fore.BLUE}#######################################################################")
     
     def organize(self, extension_map: Dict[str, str], dry_run: bool = False) -> None:
         """

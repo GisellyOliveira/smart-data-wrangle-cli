@@ -4,14 +4,18 @@ import sys
 from pathlib import Path
 from typing import Dict
 
+from colorama import init, Fore, Style
+
 from . import config
 from .core import FileOrganizer
+
+init(autoreset=True)
 
 logger = logging.getLogger(__name__)
 
 
 def setup_logging(level: int):
-    """Configures the application's root logger."""
+    """Sets up basic logging for the application."""
     logging.basicConfig(
         level=level,
         format='%(asctime)s - %(levelname)s - %(message)s',
@@ -31,8 +35,10 @@ def handle_interactive_edit(current_map: Dict[str, str]) -> bool:
         True if any changes were made to the map, False otherwise.
     """
     try:
-        review_choice = input("Review or modify current extension mappings? (yes/No, default: No): ").strip().lower()
+        print(f"{Fore.BLUE}####################################################################### {Style.RESET_ALL}")
+        review_choice = input("Review or modify current extension mappings? (yes/No, default: No): }").strip().lower()
         first_char = review_choice[0] if review_choice else 'n'
+        print(f"{Fore.BLUE}####################################################################### {Style.RESET_ALL}")
     except EOFError:
         logger.warning("\nInput stream closed (EOF). Skipping review.")
         return False
@@ -42,12 +48,12 @@ def handle_interactive_edit(current_map: Dict[str, str]) -> bool:
         return False
     
     map_changed = False
-    logger.info("--- Review/Modify Existing Mappings ---")
+    logger.info(f"\n{Style.BRIGHT}--- Review/Modify Existing Mappings ---{Style.RESET_ALL}")
     if not current_map:
         logger.info("No mappings currently defined.")
     else:
         for ext, folder in sorted(current_map.items()):
-            logger.info(f"  '{ext}' -> '{folder}'")
+            logger.info(f"  {Fore.CYAN}{ext}{Style.RESET_ALL} -> {Fore.GREEN}{folder}{Style.RESET_ALL}")
     
     while True:
         try:
@@ -61,7 +67,7 @@ def handle_interactive_edit(current_map: Dict[str, str]) -> bool:
 
         if not ext_to_modify.startswith('.') or len(ext_to_modify) < 2:
             if ext_to_modify:
-                logger.warning(f"Invalid extension format: '{ext_to_modify}'.")
+                logger.warning(f"{Fore.YELLOW}Invalid extension format: '{ext_to_modify}'.")
             continue
 
         if ext_to_modify in current_map:
@@ -115,12 +121,13 @@ def handle_unmapped_extensions(source_dir: Path, current_map: Dict[str, str]) ->
         return False
 
     map_changed = False
-    logger.info("--- New/Unmapped Extensions Found ---")
+    logger.info(f"\n{Fore.BLUE}###################### New/Unmapped Extensions Found ###################### {Style.RESET_ALL}")
     logger.info("The following unmapped extensions were discovered: " + ", ".join(unmapped))
+    print(f"\n{Fore.BLUE}#######################################################################")
     
     for ext in unmapped:
         try:
-            prompt = f"Enter target folder for '{ext}' (or leave blank to ignore): "
+            prompt = f"Enter target folder for '{Fore.CYAN}{ext}{Style.RESET_ALL}' (or leave blank to ignore): "
             folder_name = input(prompt).strip()
             
             if not folder_name:
@@ -130,12 +137,12 @@ def handle_unmapped_extensions(source_dir: Path, current_map: Dict[str, str]) ->
             # Basic validation for folder names to prevent common errors.
             invalid_chars = ['/', '\\', ':', '*', '?', '"', '<', '>', '|']
             if any(char in folder_name for char in invalid_chars) or folder_name.startswith('.') or folder_name.endswith('.'):
-                logger.warning(f"Invalid folder name: '{folder_name}'. Skipping this extension.")
+                logger.warning(f"{Fore.YELLOW}Invalid folder name: '{folder_name}'. Skipping this extension.")
                 continue
             
             current_map[ext] = folder_name
             map_changed = True
-            logger.info(f"Extension '{ext}' will be organized into '{folder_name}'.")
+            logger.info(f"Extension '{ext}' will be organized into '{Fore.GREEN}{folder_name}{Style.RESET_ALL}'.")
         except EOFError:
             logger.warning("\nInput stream closed (EOF). Stopping interactive mapping.")
             break
@@ -159,8 +166,14 @@ def main():
 
     setup_logging(args.loglevel)
 
+    banner = f"""
+{Fore.YELLOW}#######################################################################
+######################   Sorting out the chaos   ######################
+#######################################################################{Style.RESET_ALL}
+    """
+    logger.info(banner)
+
     try:
-        # The main application workflow is a clear, sequential process.
         extension_map = config.load_extension_map()
 
         map_changed_by_edit = handle_interactive_edit(extension_map)
@@ -179,8 +192,8 @@ def main():
                 logger.warning("Input stream closed (EOF). Configuration not saved.")
 
     except (ValueError, FileNotFoundError) as e:
-        logger.critical(f"Configuration Error: {e}")
+        logger.critical(f"{Fore.RED}Configuration Error: {e}")
         sys.exit(1)
     except Exception as e:
-        logger.critical(f"An unexpected critical error occurred: {e}", exc_info=True)
+        logger.critical(f"{Fore.RED}An unexpected critical error occurred: {e}", exc_info=True)
         sys.exit(1)
